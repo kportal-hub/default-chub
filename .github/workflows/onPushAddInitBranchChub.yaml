@@ -25,7 +25,7 @@ jobs:
       run: npm install
       env:
         CI: true
-    - name: Create new repo and add first lesson
+    - name: Create new repo and fetch first lesson
       env:
         NODE_CUBE: ${{ github.event_path }}
       run: |
