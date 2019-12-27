@@ -40,11 +40,10 @@ async function fetchStartLesson(qHub, token, qHubCube) {
         let octokit = new Octokit({
             auth: "token " + token
         });
-        // get first lesson from qhub
         let resp = await octokit.repos.getContents({
             owner: qHub,
             repo: qHubCube,
-            path: `lessons.index`, // `cube.json`
+            path: `lessons.index`,
             headers: {
                 'accept': 'application/vnd.github.VERSION.raw'
             }
@@ -53,10 +52,6 @@ async function fetchStartLesson(qHub, token, qHubCube) {
             result: true,
             lessons: resp.data
         }
-        // return {
-        //     result: true,
-        //     lesson: resp.data.split("\n").filter(Boolean)[0] // JSON.parse(resp.data)['index'][0]
-        // }
     } catch (err) {
         return {
             result: false,
