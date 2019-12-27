@@ -255,7 +255,7 @@ async function deleteFile(owner, repo, path, message, branch, token) {
             owner,
             repo,
             path,
-            ref
+            ref: branch
         })).data.sha;
         if (sha) {
             await octokit.repos.deleteFile({
