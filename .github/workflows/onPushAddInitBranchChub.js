@@ -246,6 +246,35 @@ async function addActions(branch, username, cube, masterToken, studentToken, cHu
 
 }
 
+async function deleteFile(owner, repo, path, message, branch, token) {
+    try {
+        let octokit = new Octokit({
+            auth: "token " + token
+        });
+        let sha = (await octokit.repos.getContents({
+            owner,
+            repo,
+            path,
+            ref
+        })).data.sha;
+        if (sha) {
+            await octokit.repos.deleteFile({
+                owner,
+                repo,
+                path,
+                message,
+                sha,
+                branch
+            });
+            return true;
+        } else {
+            throw new Error(" no sha found to remove auth file in master branch in " + repo + "repo!");
+        }
+    } catch (err) {
+        throw err
+    }
+}
+
 let initCube = async (username, cube, repo, gitToken) => {
     const algorithm = 'aes256';
     const authPhrase = 'unclecode';
@@ -299,6 +328,16 @@ let initCube = async (username, cube, repo, gitToken) => {
 
                 // ========================================== func 5 - add actions file for chub and student repo
                 await addActions(initLessonBranch, username, cube, masterToken, studentToken, cHub, qHub, qHubCube);
+                
+                // ========================================== func 6 - delete auth file
+                await deleteFile(
+                    cHub, // owner
+                    cHubCube, // repo
+                    "auth", // path
+                    "delete auth request file",
+                    "master", // branch
+                    masterToken
+                );
 
                 return resp;
             }
