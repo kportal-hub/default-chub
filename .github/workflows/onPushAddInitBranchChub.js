@@ -320,15 +320,6 @@ let initCube = async (username, cube, repo, gitToken) => {
                 // ========================================== func 2
                 await pullFirstLesson(res.lessons, username, cube, masterToken, cHub, qHub, qHubCube);
 
-                // ========================================== func 3 - fork cube repo
-                await forkChubCube(username, cube, cHub, teacher, studentToken);
-                
-                // ========================================== func 4 - enable page
-                let resp = await enableStudentPage(username, cube, studentToken);
-
-                // ========================================== func 5 - add actions file for chub and student repo
-                await addActions(initLessonBranch, username, cube, masterToken, studentToken, cHub, qHub, qHubCube);
-                
                 // ========================================== func 6 - delete auth file
                 await deleteFile(
                     cHub, // owner
@@ -338,7 +329,16 @@ let initCube = async (username, cube, repo, gitToken) => {
                     "master", // branch
                     masterToken
                 );
+                
+                // ========================================== func 3 - fork cube repo
+                await forkChubCube(username, cube, cHub, teacher, studentToken);
+                
+                // ========================================== func 4 - enable page
+                let resp = await enableStudentPage(username, cube, studentToken);
 
+                // ========================================== func 5 - add actions file for chub and student repo
+                await addActions(initLessonBranch, username, cube, masterToken, studentToken, cHub, qHub, qHubCube);
+                
                 return resp;
             }
             return res
