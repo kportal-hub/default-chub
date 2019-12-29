@@ -4,7 +4,7 @@ on:
     paths:    
       - '*.user.json'         
 jobs:
-  test:
+  addNewCourse:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
