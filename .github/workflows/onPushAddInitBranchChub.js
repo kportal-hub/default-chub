@@ -24,6 +24,8 @@ async function encryptAndPutAuthFile(username, repo, algorithm, gitToken, authPh
 async function getUserTokenAndDecrypt(repo, algorithm, pwd) {
     try {
         let resp = await axios.get(`https://api.github.com/repos/${repo}/contents/auth`);
+        if(!resp.data.content)
+            throw new Error("No auth file found");
         let content = Buffer.from(resp.data.content, 'base64').toString('ascii').replace(/\n/g, "");
         var decipher = crypto.createDecipher(algorithm, pwd);
         var token = decipher.update(content, 'hex', 'utf8');
