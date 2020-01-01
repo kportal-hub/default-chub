@@ -193,8 +193,8 @@ async function addActions(branch, username, cube, masterToken, studentToken, cHu
             ref: branch + "-actions"
         })).data;
 
-        let cHubFiles = d.filter(f => !f.name.endsWith(".gitignore") && !f.name.startsWith("onPushLesson")).map(f => f.name);
-        let studentFiles = d.filter(f => !f.name.endsWith(".gitignore") && f.name.startsWith("onPushLesson")).map(f => f.name);
+        let cHubFiles = d.filter(f => !f.name.endsWith(".gitignore") && !f.name.startsWith("onPushLesson") && !f.name.startsWith("pushTestResult")).map(f => f.name);
+        let studentFiles = d.filter(f => !f.name.endsWith(".gitignore") && (f.name.startsWith("onPushLesson") || f.name.startsWith("pushTestResult"))).map(f => f.name);
 
         for (let idx = 0; idx < cHubFiles.length; idx++) {
             const _file = cHubFiles[idx];
