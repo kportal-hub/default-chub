@@ -86,7 +86,7 @@ async function pullFirstLesson(lessonsIndex, username, cube, token, cHub, qHub, 
             }
         })
         shell.exec(`git checkout master`, { silent: _silent });
-        fs.writeFileSync(`${cube}.cube.json`, JSON.stringify(cubeInfo));
+        fs.writeFileSync(`${cube}.cube.json`, JSON.stringify(cubeInfo), null, 4);
         
         // add lesson.index
         fs.writeFileSync(`lessons.index`, lessonsIndex);
