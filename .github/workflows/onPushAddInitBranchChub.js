@@ -75,7 +75,11 @@ async function pullFirstLesson(lessonsIndex, username, cube, token, cHub, qHub, 
         shell.exec(`git checkout --orphan ${initLessonBranch}`, { silent: _silent });
         shell.exec(`git rm -rf .`, { silent: _silent });
         shell.exec(`git pull https://${qHub}:${token}@github.com/${qHub}/${qHubCube}.git ${initLessonBranch}`, { silent: _silent });
-        let cubeInfo = {};
+        
+        shell.exec(`git checkout master`, { silent: _silent });
+        let cubeInfo = JSON.parse(fs.readFileSync(`${cube}.cube.json`, "utf8")) || {};
+        let docsCubeInfo = JSON.parse(fs.readFileSync(`docs/${cube}.cube.json`, "utf8")) || {};
+        // let cubeInfo = {};
         cubeInfo.current = { lesson: initLessonBranch };
         cubeInfo.lessons = {}
         lessonsIndex.split("\n").filter(Boolean).forEach(l => {
@@ -84,9 +88,17 @@ async function pullFirstLesson(lessonsIndex, username, cube, token, cHub, qHub, 
                     status: "pending"
                 }
             }
-        })
-        shell.exec(`git checkout master`, { silent: _silent });
+        });
+
+        docsCubeInfo.current = cubeInfo.current;
+        docsCubeInfo.lessons = cubeInfo.lessons;
+        
+        // shell.exec(`git checkout master`, { silent: _silent });
+        
         fs.writeFileSync(`${cube}.cube.json`, JSON.stringify(cubeInfo, null, 4));
+        
+        // save a.cube.json and a.user.json in docs folder
+        fs.writeFileSync(`docs/${cube}.cube.json`, JSON.stringify(docsCubeInfo, null, 4));
         
         // add lesson.index
         fs.writeFileSync(`lessons.index`, lessonsIndex);
