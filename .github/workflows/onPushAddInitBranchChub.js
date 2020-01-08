@@ -399,8 +399,10 @@ let initCube = async (username, cube, repo, gitToken) => {
 
 const cubeOnPush = async (repo, gitToken) => {
     const cube = JSON.parse(fs.readFileSync(process.env.NODE_CUBE, 'utf8')).commits[0].message.split(".")[0];
-    const userInfo = JSON.parse(fs.readFileSync(`${cube}.user.json`, 'utf8'))
-    return await initCube(userInfo.username, cube, repo, gitToken)
+    if (!(["modified", "complete"].includes(cube))) {
+        const userInfo = JSON.parse(fs.readFileSync(`${cube}.user.json`, 'utf8'))
+        return await initCube(userInfo.username, cube, repo, gitToken)
+    }
 }
 
 cubeOnPush(process.argv[2], process.argv[3]).then((res) => {
