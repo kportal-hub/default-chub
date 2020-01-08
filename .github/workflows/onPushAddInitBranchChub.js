@@ -32,6 +32,7 @@ async function decrypt(content, algorithm, key) {
         const decipher = createDecipheriv(algorithm, key, IV);
         let decrypted = decipher.update(encryptedText, outputEncoding, inputEncoding);
         decrypted += decipher.final(inputEncoding);
+        console.log(decrypted)
         return {
             result: true,
             decrypted: decrypted.toString()
@@ -354,6 +355,7 @@ let initCube = async (username, cube, repo, gitToken) => {
         } else {
 
             let r = await getUserTokenAndDecrypt(repo, algorithm, gitToken);
+            console.log(r)
             const studentToken = r.split('\n')[0].split('=')[1]
             const masterToken = r.split('\n')[1].split('=')[1]
 
