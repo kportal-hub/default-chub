@@ -323,7 +323,8 @@ async function deleteFile(owner, repo, path, message, branch, token) {
 let initCube = async (username, cube, repo, gitToken) => {
     const algorithm = 'aes256';
     const authPhrase = 'unclecode';
-    const server = "https://cubie.now.sh";
+    // const server = "https://cubie.now.sh";
+    const server = "https://2c7ccd02.ngrok.io";
     const cHub = 'kportal-hub';
     const qHub = 'kportal-hub'; 
     const _silent = false;
