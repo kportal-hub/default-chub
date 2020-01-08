@@ -3,13 +3,51 @@ const fs = require('fs');
 const Octokit = require("@octokit/rest");
 const axios = require("axios");
 const shell = require("shelljs");
-const crypto = require('crypto');
+// const crypto = require('crypto');
+const { createCipheriv, createDecipheriv, randomBytes } = require('crypto');
+
+const inputEncoding = 'utf8';
+const outputEncoding = 'hex';
+
+async function encrypt(content, algorithm, key) {
+    try {
+        key = key.substr(key.length - 32);
+        const iv = new Buffer.from(randomBytes(16), 'hex');
+        const cipher = createCipheriv(algorithm, key, iv);
+        let crypted = cipher.update(content, inputEncoding, outputEncoding);
+        crypted += cipher.final(outputEncoding);
+        return `${iv.toString('hex')}:${crypted.toString()}`;
+    } catch (err) {
+        console.log(err.message);
+        throw err
+    }
+}
+
+async function decrypt(content, algorithm, key) {
+    try {
+        key = key.substr(key.length - 32);
+        const textParts = content.split(':');
+        const IV = new Buffer.from(textParts.shift(), outputEncoding);
+        const encryptedText = new Buffer.from(textParts.join(':'), outputEncoding);
+        const decipher = createDecipheriv(algorithm, key, IV);
+        let decrypted = decipher.update(encryptedText, outputEncoding, inputEncoding);
+        decrypted += decipher.final(inputEncoding);
+        return {
+            result: true,
+            decrypted: decrypted.toString()
+        }
+    } catch (err) {
+        console.log(err)
+        throw err
+    }
+}
 
 async function encryptAndPutAuthFile(username, repo, algorithm, gitToken, authPhrase, _silent) {
     try {
-        var cipher = crypto.createCipher(algorithm, gitToken);
-        var encryptedPhrase = cipher.update(authPhrase, 'utf8', 'hex');
-        encryptedPhrase += cipher.final('hex');
+        // var cipher = crypto.createCipher(algorithm, gitToken);
+        // var encryptedPhrase = cipher.update(authPhrase, 'utf8', 'hex');
+        // encryptedPhrase += cipher.final('hex');
+        let encryptedPhrase = await encrypt(authPhrase, algorithm, gitToken)
         shell.exec(`git checkout master`, {silent: _silent});
         shell.exec(`echo ${encryptedPhrase} > auth`, {silent: _silent});
         shell.exec(`git add auth`, {silent: _silent});
@@ -27,9 +65,7 @@ async function getUserTokenAndDecrypt(repo, algorithm, pwd) {
         if(!resp.data.content)
             throw new Error("No auth file found");
         let content = Buffer.from(resp.data.content, 'base64').toString('ascii').replace(/\n/g, "");
-        var decipher = crypto.createDecipher(algorithm, pwd);
-        var token = decipher.update(content, 'hex', 'utf8');
-        token += decipher.final('utf8');
+        let token = await decrypt(content, algorithm, pwd);
         return token;
     } catch (err) {
         throw err
