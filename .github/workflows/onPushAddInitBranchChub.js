@@ -90,7 +90,7 @@ async function fetchStartLesson(qHub, token, qHubCube) {
         let scenarioResp = await octokit.repos.getContents({
             owner: qHub,
             repo: qHubCube,
-            path: `scenario.default.index`,
+            path: `default.index`,
             headers: {
                 'accept': 'application/vnd.github.VERSION.raw'
             }
