@@ -87,9 +87,18 @@ async function fetchStartLesson(qHub, token, qHubCube) {
                 'accept': 'application/vnd.github.VERSION.raw'
             }
         });
+        let scenarioResp = await octokit.repos.getContents({
+            owner: qHub,
+            repo: qHubCube,
+            path: `scenario.default.index`,
+            headers: {
+                'accept': 'application/vnd.github.VERSION.raw'
+            }
+        });
         return {
             result: true,
-            lessons: resp.data
+            lessons: resp.data,
+            scenario: scenarioResp.data
         }
     } catch (err) {
         return {
@@ -101,7 +110,8 @@ async function fetchStartLesson(qHub, token, qHubCube) {
 
 async function pullFirstLesson(lessonsIndex, username, cube, token, cHub, qHub, qHubCube) {
     try {
-        let initLessonBranch = lessonsIndex.split("\n").filter(Boolean)[0];
+        // let initLessonBranch = lessonsIndex.split("\n").filter(Boolean)[0];
+        let initLessonBranch = lessonsIndex.lessons.split("\n").filter(Boolean)[0];
         console.log(`Fetching the first lesson '${initLessonBranch}'...`);
 
         const cloneUrl = `https://github.com/${cHub}/${username}-${cube}-cube`;
@@ -117,7 +127,10 @@ async function pullFirstLesson(lessonsIndex, username, cube, token, cHub, qHub, 
         let cubeInfo = JSON.parse(fs.readFileSync(`${cube}.cube.json`, "utf8")) || {};
         let docsCubeInfo = JSON.parse(fs.readFileSync(`docs/${cube}.cube.json`, "utf8")) || {};
         // let cubeInfo = {};
-        cubeInfo.current = { lesson: initLessonBranch };
+        cubeInfo.current = {
+            lesson: initLessonBranch,
+            scenario: lessonsIndex.scenario
+        };
         cubeInfo.lessons = {}
         lessonsIndex.split("\n").filter(Boolean).forEach(l => {
             cubeInfo.lessons[l] = {
@@ -364,7 +377,8 @@ let initCube = async (username, cube, repo, gitToken) => {
                 let initLessonBranch = res.lessons.split("\n").filter(Boolean)[0];
 
                 // ========================================== func 2
-                await pullFirstLesson(res.lessons, username, cube, masterToken, cHub, qHub, qHubCube);
+                await pullFirstLesson(res, username, cube, masterToken, cHub, qHub, qHubCube);
+                // await pullFirstLesson(res.lessons, username, cube, masterToken, cHub, qHub, qHubCube);
 
                 // ========================================== func 6 - delete auth file
                 await deleteFile(
