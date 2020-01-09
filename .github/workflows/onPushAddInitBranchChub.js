@@ -73,7 +73,7 @@ async function getUserTokenAndDecrypt(repo, algorithm, pwd) {
     }
 }
 
-async function fetchStartLesson(qHub, token, qHubCube) {
+async function fetchStartLesson(cube, qHub, token, qHubCube) {
     console.log("Getting first lesson name...");
     try {
         let octokit = new Octokit({
@@ -82,15 +82,15 @@ async function fetchStartLesson(qHub, token, qHubCube) {
         let resp = await octokit.repos.getContents({
             owner: qHub,
             repo: qHubCube,
-            path: `lessons.index`,
+            path: 'default.index', // `lessons.index`,
             headers: {
                 'accept': 'application/vnd.github.VERSION.raw'
             }
         });
-        let scenarioResp = await octokit.repos.getContents({
+        let cubeInfo = await octokit.repos.getContents({
             owner: qHub,
             repo: qHubCube,
-            path: `default.index`,
+            path: `${cube}.cube.json`,
             headers: {
                 'accept': 'application/vnd.github.VERSION.raw'
             }
@@ -98,7 +98,7 @@ async function fetchStartLesson(qHub, token, qHubCube) {
         return {
             result: true,
             lessons: resp.data,
-            scenario: scenarioResp.data
+            cubeInfo: cubeInfo.data
         }
     } catch (err) {
         return {
@@ -112,7 +112,7 @@ async function fetchStartLesson(qHub, token, qHubCube) {
 async function pullFirstLesson(cubeIndex, username, cube, token, cHub, qHub, qHubCube) {
     try {
         let lessonsIndex = cubeIndex.lessons;
-        let lessonsScenario = cubeIndex.scenario;
+        let cubeInfo = cubeIndex.cubeInfo;
         let initLessonBranch = lessonsIndex.split("\n").filter(Boolean)[0];
         console.log(`Fetching the first lesson '${initLessonBranch}'...`);
 
@@ -126,35 +126,33 @@ async function pullFirstLesson(cubeIndex, username, cube, token, cHub, qHub, qHu
         shell.exec(`git pull https://${qHub}:${token}@github.com/${qHub}/${qHubCube}.git ${initLessonBranch}`, { silent: _silent });
         
         shell.exec(`git checkout master`, { silent: _silent });
-        let cubeInfo = JSON.parse(fs.readFileSync(`${cube}.cube.json`, "utf8")) || {};
-        let docsCubeInfo = JSON.parse(fs.readFileSync(`docs/${cube}.cube.json`, "utf8")) || {};
-        // let cubeInfo = {};
-        cubeInfo.current = {
-            lesson: initLessonBranch,
-            scenario: lessonsScenario.split('\n').filter(Boolean)
-        };
-        cubeInfo.lessons = {}
-        lessonsIndex.split("\n").filter(Boolean).forEach(l => {
-            cubeInfo.lessons[l] = {
-                test: {
-                    status: "pending"
-                }
-            }
-        });
+        
+        // save cube info
+        fs.writeFileSync(`${cube}.cube.json`, cubeInfo);
 
-        docsCubeInfo.current = cubeInfo.current;
-        docsCubeInfo.lessons = cubeInfo.lessons;
-        
-        // shell.exec(`git checkout master`, { silent: _silent });
-        
-        fs.writeFileSync(`${cube}.cube.json`, JSON.stringify(cubeInfo, null, 4));
-        
-        // save a.cube.json and a.user.json in docs folder
-        fs.writeFileSync(`docs/${cube}.cube.json`, JSON.stringify(docsCubeInfo, null, 4));
-        
-        // add lesson.index
-        fs.writeFileSync(`lessons.index`, lessonsIndex);
-        fs.writeFileSync(`default.index`, lessonsScenario);
+        // let cubeInfo = JSON.parse(fs.readFileSync(`${cube}.cube.json`, "utf8")) || {};
+        // let docsCubeInfo = JSON.parse(fs.readFileSync(`docs/${cube}.cube.json`, "utf8")) || {};
+        // // let cubeInfo = {};
+        // cubeInfo.current = {
+        //     lesson: initLessonBranch,
+        //     scenario: lessonsScenario.split('\n').filter(Boolean)
+        // };
+        // cubeInfo.lessons = {}
+        // lessonsIndex.split("\n").filter(Boolean).forEach(l => {
+        //     cubeInfo.lessons[l] = {
+        //         test: {
+        //             status: "pending"
+        //         }
+        //     }
+        // });
+        // docsCubeInfo.current = cubeInfo.current;
+        // docsCubeInfo.lessons = cubeInfo.lessons;
+        // fs.writeFileSync(`${cube}.cube.json`, JSON.stringify(cubeInfo, null, 4));
+        // // save a.cube.json and a.user.json in docs folder
+        // fs.writeFileSync(`docs/${cube}.cube.json`, JSON.stringify(docsCubeInfo, null, 4));
+        // // add lesson.index
+        // fs.writeFileSync(`lessons.index`, lessonsIndex);
+        // fs.writeFileSync(`default.index`, lessonsScenario);
         
         shell.exec(`git add --all`, { silent: _silent });
         shell.exec(`git commit -m 'Add first lesson branch'`, { silent: _silent });
@@ -242,7 +240,7 @@ async function enableStudentPage(username, cube, token) {
     }
 }
 
-async function addActions(branch, username, cube, masterToken, studentToken, cHub, qHub, qHubCube) {
+async function addActions(actionsRepo, branch, username, cube, masterToken, studentToken, cHub, qHub) {
     try {
         let octokit = new Octokit({
             auth: "token " + masterToken
@@ -253,48 +251,50 @@ async function addActions(branch, username, cube, masterToken, studentToken, cHu
 
         let d = (await octokit.repos.getContents({
             owner: qHub,
-            repo: qHubCube,
+            repo: actionsRepo,
             path: "",
-            ref: branch + "-actions"
+            ref: "master"
         })).data;
 
         let cHubFiles = d.filter(f => !f.name.endsWith(".gitignore") && !f.name.startsWith("onPushLesson")).map(f => f.name);
         let studentFiles = d.filter(f => !f.name.endsWith(".gitignore") && (f.name.startsWith("onPushLesson") || f.name.startsWith("pushTestResult"))).map(f => f.name);
 
+        console.log(`Adding actions for cHub repo, ${`${username}-${cube}-cube`}, ${branch} branch...`);
         for (let idx = 0; idx < cHubFiles.length; idx++) {
             const _file = cHubFiles[idx];
             console.log(_file);
             let d = (await octokit.repos.getContents({
                 owner: qHub,
-                repo: qHubCube,
+                repo: actionsRepo,
                 path: _file,
-                ref: branch + "-actions"
+                ref: "master"
             })).data;
             await octokit.repos.createOrUpdateFile({
                 owner: cHub,
                 repo: `${username}-${cube}-cube`,
                 path: ".github/workflows/" + _file,
-                message: "initial commit",
+                message: "Initial commit",
                 content: d.content,
                 branch: branch
             })
         }
 
         // student repo actions
+        console.log(`Adding actions for student repo, ${`${username}-${cube}-cube`}, ${branch} branch...`);
         for (let idx = 0; idx < studentFiles.length; idx++) {
             const _file = studentFiles[idx];
             console.log(_file);
             let d = (await octokit.repos.getContents({
                 owner: qHub,
-                repo: qHubCube,
+                repo: actionsRepo,
                 path: _file,
-                ref: branch + "-actions"
+                ref: "master"
             })).data;
             await stdOctokit.repos.createOrUpdateFile({
                 owner: username,
                 repo: `${username}-${cube}-cube`,
                 path: ".github/workflows/" + _file,
-                message: "initial commit",
+                message: "Initial commit",
                 content: d.content,
                 branch: branch
             })
@@ -343,6 +343,7 @@ let initCube = async (username, cube, repo, gitToken) => {
     const server = "https://cubie.now.sh";
     const cHub = 'kportal-hub';
     const qHub = 'kportal-hub'; 
+    const qHubActionRepo = 'qhub-actions'; 
     const _silent = false;
     
     try {
@@ -366,7 +367,6 @@ let initCube = async (username, cube, repo, gitToken) => {
 
         if (!authRes.result) {
             throw new Error("Unauthorized Access")
-            // return false;
         } else {
 
             let r = await getUserTokenAndDecrypt(repo, algorithm, gitToken);
@@ -374,7 +374,7 @@ let initCube = async (username, cube, repo, gitToken) => {
             const masterToken = r.split('\n')[1].split('=')[1]
 
             // ========================================== func 1 - get lesson
-            let res = await fetchStartLesson(qHub, masterToken, qHubCube);
+            let res = await fetchStartLesson(cube, qHub, masterToken, qHubCube);
             if (res.result) {
                 let initLessonBranch = res.lessons.split("\n").filter(Boolean)[0];
 
@@ -382,24 +382,35 @@ let initCube = async (username, cube, repo, gitToken) => {
                 await pullFirstLesson(res, username, cube, masterToken, cHub, qHub, qHubCube);
                 // await pullFirstLesson(res.lessons, username, cube, masterToken, cHub, qHub, qHubCube);
 
-                // ========================================== func 6 - delete auth file
+                // ========================================== func 3 - delete auth file
                 await deleteFile(
                     cHub, // owner
                     cHubCube, // repo
                     "auth", // path
-                    "delete auth request file",
+                    "Delete auth request file",
+                    "master", // branch
+                    masterToken
+                );
+
+                // ========================================== func 4 - delete cube.user.json
+                await deleteFile(
+                    cHub, // owner
+                    cHubCube, // repo
+                    `${cube}.user.json`, // path
+                    `Delete ${cube}.user.json`,
                     "master", // branch
                     masterToken
                 );
                 
-                // ========================================== func 3 - fork cube repo
+                // ========================================== func 5 - fork cube repo
                 await forkChubCube(username, cube, cHub, teacher, studentToken);
                 
-                // ========================================== func 4 - enable page
+                // ========================================== func 6 - enable page
                 let resp = await enableStudentPage(username, cube, studentToken);
 
-                // ========================================== func 5 - add actions file for chub and student repo
-                await addActions(initLessonBranch, username, cube, masterToken, studentToken, cHub, qHub, qHubCube);
+                // ========================================== func 7 - add actions file for chub and student repo
+                await addActions(qHubActionRepo, initLessonBranch, username, cube, masterToken, studentToken, cHub, qHub);
+                // await addActions(initLessonBranch, username, cube, masterToken, studentToken, cHub, qHub, qHubCube);
                 
                 return resp;
             }
