@@ -154,7 +154,7 @@ async function pullFirstLesson(cubeIndex, username, cube, token, cHub, qHub, qHu
         
         // add lesson.index
         fs.writeFileSync(`lessons.index`, lessonsIndex);
-        fs.writeFileSync(`scenario.default.index`, lessonsScenario.split("\n").filter(Boolean));
+        fs.writeFileSync(`scenario.default.index`, lessonsScenario);
         
         shell.exec(`git add --all`, { silent: _silent });
         shell.exec(`git commit -m 'Add first lesson branch'`, { silent: _silent });
