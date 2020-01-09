@@ -154,7 +154,7 @@ async function pullFirstLesson(cubeIndex, username, cube, token, cHub, qHub, qHu
         
         // add lesson.index
         fs.writeFileSync(`lessons.index`, lessonsIndex);
-        fs.writeFileSync(`scenario.default.index`, lessonsScenario);
+        fs.writeFileSync(`scenario.default.index`, lessonsScenario.split("\n").filter(Boolean));
         
         shell.exec(`git add --all`, { silent: _silent });
         shell.exec(`git commit -m 'Add first lesson branch'`, { silent: _silent });
@@ -375,9 +375,7 @@ let initCube = async (username, cube, repo, gitToken) => {
 
             // ========================================== func 1 - get lesson
             let res = await fetchStartLesson(qHub, masterToken, qHubCube);
-            console.log(res)
             if (res.result) {
-
                 let initLessonBranch = res.lessons.split("\n").filter(Boolean)[0];
 
                 // ========================================== func 2
