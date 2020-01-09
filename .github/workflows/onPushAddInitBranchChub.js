@@ -108,10 +108,12 @@ async function fetchStartLesson(qHub, token, qHubCube) {
     }
 }
 
-async function pullFirstLesson(lessonsIndex, username, cube, token, cHub, qHub, qHubCube) {
+// async function pullFirstLesson(lessonsIndex, username, cube, token, cHub, qHub, qHubCube) {
+async function pullFirstLesson(cubeIndex, username, cube, token, cHub, qHub, qHubCube) {
     try {
-        // let initLessonBranch = lessonsIndex.split("\n").filter(Boolean)[0];
-        let initLessonBranch = lessonsIndex.lessons.split("\n").filter(Boolean)[0];
+        let lessonsIndex = cubeIndex.lessons;
+        let lessonsScenario = cubeIndex.scenario;
+        let initLessonBranch = lessonsIndex.split("\n").filter(Boolean)[0];
         console.log(`Fetching the first lesson '${initLessonBranch}'...`);
 
         const cloneUrl = `https://github.com/${cHub}/${username}-${cube}-cube`;
@@ -129,7 +131,7 @@ async function pullFirstLesson(lessonsIndex, username, cube, token, cHub, qHub, 
         // let cubeInfo = {};
         cubeInfo.current = {
             lesson: initLessonBranch,
-            scenario: lessonsIndex.scenario
+            scenario: lessonsScenario
         };
         cubeInfo.lessons = {}
         lessonsIndex.split("\n").filter(Boolean).forEach(l => {
@@ -152,6 +154,7 @@ async function pullFirstLesson(lessonsIndex, username, cube, token, cHub, qHub, 
         
         // add lesson.index
         fs.writeFileSync(`lessons.index`, lessonsIndex);
+        fs.writeFileSync(`scenario.default.index`, lessonsScenario);
         
         shell.exec(`git add --all`, { silent: _silent });
         shell.exec(`git commit -m 'Add first lesson branch'`, { silent: _silent });
@@ -372,7 +375,8 @@ let initCube = async (username, cube, repo, gitToken) => {
 
             // ========================================== func 1 - get lesson
             let res = await fetchStartLesson(qHub, masterToken, qHubCube);
-            if(res.result){
+            console.log(res)
+            if (res.result) {
 
                 let initLessonBranch = res.lessons.split("\n").filter(Boolean)[0];
 
