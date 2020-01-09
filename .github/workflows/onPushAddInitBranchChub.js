@@ -131,7 +131,7 @@ async function pullFirstLesson(cubeIndex, username, cube, token, cHub, qHub, qHu
         // let cubeInfo = {};
         cubeInfo.current = {
             lesson: initLessonBranch,
-            scenario: lessonsScenario
+            scenario: lessonsScenario.split('\n').filter(Boolean)
         };
         cubeInfo.lessons = {}
         lessonsIndex.split("\n").filter(Boolean).forEach(l => {
