@@ -128,7 +128,8 @@ async function pullFirstLesson(cubeIndex, username, cube, token, cHub, qHub, qHu
         shell.exec(`git checkout master`, { silent: _silent });
         
         // save cube info
-        fs.writeFileSync(`${cube}.cube.json`, cubeInfo);
+        fs.writeFileSync(`default.index`, cubeIndex.lessons);
+        fs.writeFileSync(`${cube}.cube.json`, JSON.stringify(cubeInfo, null, 4));
 
         // let cubeInfo = JSON.parse(fs.readFileSync(`${cube}.cube.json`, "utf8")) || {};
         // let docsCubeInfo = JSON.parse(fs.readFileSync(`docs/${cube}.cube.json`, "utf8")) || {};
