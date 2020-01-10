@@ -79,14 +79,14 @@ async function fetchStartLesson(cube, qHub, token, qHubCube) {
         let octokit = new Octokit({
             auth: "token " + token
         });
-        // let resp = await octokit.repos.getContents({
-        //     owner: qHub,
-        //     repo: qHubCube,
-        //     path: 'default.index', // `lessons.index`,
-        //     headers: {
-        //         'accept': 'application/vnd.github.VERSION.raw'
-        //     }
-        // });
+        let resp = await octokit.repos.getContents({
+            owner: qHub,
+            repo: qHubCube,
+            path: 'default.index', // `lessons.index`,
+            headers: {
+                'accept': 'application/vnd.github.VERSION.raw'
+            }
+        });
         let cubeInfo = await octokit.repos.getContents({
             owner: qHub,
             repo: qHubCube,
@@ -97,7 +97,7 @@ async function fetchStartLesson(cube, qHub, token, qHubCube) {
         });
         return {
             result: true,
-            lessons: JSON.parse(cubeInfo.data).index, //resp.data,
+            lessons: resp.data,
             cubeInfo: JSON.parse(cubeInfo.data)
         }
     } catch (err) {
