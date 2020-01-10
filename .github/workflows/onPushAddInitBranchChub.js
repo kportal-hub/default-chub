@@ -376,6 +376,7 @@ let initCube = async (username, cube, repo, gitToken) => {
 
             // ========================================== func 1 - get lesson
             let res = await fetchStartLesson(cube, qHub, masterToken, qHubCube);
+            console.log(res)
             if (res.result) {
                 let initLessonBranch = res.lessons.split("\n").filter(Boolean)[0];
 
