@@ -270,12 +270,14 @@ async function addActions(actionsRepo, branch, username, cube, masterToken, stud
                 path: _file,
                 ref: "master"
             })).data;
+            let content = Buffer.from(d.content, 'base64').toString('ascii');
+            content = content.replace(/BRANCH/g, branch);
             await octokit.repos.createOrUpdateFile({
                 owner: cHub,
                 repo: `${username}-${cube}-cube`,
                 path: ".github/workflows/" + _file,
                 message: "Initial commit",
-                content: d.content,
+                content: Buffer.from(JSON.stringify(content)).toString('base64'),
                 branch: branch
             })
         }
@@ -291,12 +293,14 @@ async function addActions(actionsRepo, branch, username, cube, masterToken, stud
                 path: _file,
                 ref: "master"
             })).data;
+            let content = Buffer.from(d.content, 'base64').toString('ascii');
+            content = content.replace(/BRANCH/g, branch);
             await stdOctokit.repos.createOrUpdateFile({
                 owner: username,
                 repo: `${username}-${cube}-cube`,
                 path: ".github/workflows/" + _file,
                 message: "Initial commit",
-                content: d.content,
+                content: Buffer.from(JSON.stringify(content)).toString('base64'),
                 branch: branch
             })
         }
