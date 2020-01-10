@@ -97,8 +97,8 @@ async function fetchStartLesson(cube, qHub, token, qHubCube) {
         });
         return {
             result: true,
-            lessons: cubeInfo.data.index, //resp.data,
-            cubeInfo: cubeInfo.data
+            lessons: JSON.parse(cubeInfo.data).index, //resp.data,
+            cubeInfo: JSON.parse(cubeInfo.data)
         }
     } catch (err) {
         return {
