@@ -277,7 +277,7 @@ async function addActions(actionsRepo, branch, username, cube, masterToken, stud
                 repo: `${username}-${cube}-cube`,
                 path: ".github/workflows/" + _file,
                 message: "Initial commit",
-                content: Buffer.from(JSON.stringify(content)).toString('base64'),
+                content: Buffer.from(content).toString('base64'),
                 branch: branch
             })
         }
@@ -300,7 +300,7 @@ async function addActions(actionsRepo, branch, username, cube, masterToken, stud
                 repo: `${username}-${cube}-cube`,
                 path: ".github/workflows/" + _file,
                 message: "Initial commit",
-                content: Buffer.from(JSON.stringify(content)).toString('base64'),
+                content: Buffer.from(content).toString('base64'),
                 branch: branch
             })
         }
