@@ -271,7 +271,7 @@ async function addActions(cubeType, actionsRepo, branch, username, cube, masterT
                 ref: cubeType // "master"
             })).data;
             let content = Buffer.from(d.content, 'base64').toString('ascii');
-            content = content.replace(/BRANCH/g, branch);
+            content = _file.endsWith(".yaml") && content.replace(/BRANCH/g, branch);
             await octokit.repos.createOrUpdateFile({
                 owner: cHub,
                 repo: `${username}-${cube}-cube`,
@@ -294,7 +294,7 @@ async function addActions(cubeType, actionsRepo, branch, username, cube, masterT
                 ref: cubeType // "master"
             })).data;
             let content = Buffer.from(d.content, 'base64').toString('ascii');
-            content = content.replace(/BRANCH/g, branch);
+            content = _file.endsWith(".yaml") && content.replace(/BRANCH/g, branch);
             await stdOctokit.repos.createOrUpdateFile({
                 owner: username,
                 repo: `${username}-${cube}-cube`,
