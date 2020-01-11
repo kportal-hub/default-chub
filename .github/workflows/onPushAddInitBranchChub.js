@@ -241,7 +241,7 @@ async function enableStudentPage(username, cube, token) {
     }
 }
 
-async function addActions(actionsRepo, branch, username, cube, masterToken, studentToken, cHub, qHub) {
+async function addActions(cubeType, actionsRepo, branch, username, cube, masterToken, studentToken, cHub, qHub) {
     try {
         let octokit = new Octokit({
             auth: "token " + masterToken
@@ -254,7 +254,7 @@ async function addActions(actionsRepo, branch, username, cube, masterToken, stud
             owner: qHub,
             repo: actionsRepo,
             path: "",
-            ref: "master"
+            ref: cubeType // "master"
         })).data;
 
         let cHubFiles = d.filter(f => !f.name.endsWith(".gitignore") && !f.name.startsWith("onPushLesson")).map(f => f.name);
@@ -268,7 +268,7 @@ async function addActions(actionsRepo, branch, username, cube, masterToken, stud
                 owner: qHub,
                 repo: actionsRepo,
                 path: _file,
-                ref: "master"
+                ref: cubeType // "master"
             })).data;
             let content = Buffer.from(d.content, 'base64').toString('ascii');
             content = content.replace(/BRANCH/g, branch);
@@ -291,7 +291,7 @@ async function addActions(actionsRepo, branch, username, cube, masterToken, stud
                 owner: qHub,
                 repo: actionsRepo,
                 path: _file,
-                ref: "master"
+                ref: cubeType // "master"
             })).data;
             let content = Buffer.from(d.content, 'base64').toString('ascii');
             content = content.replace(/BRANCH/g, branch);
@@ -374,20 +374,26 @@ let initCube = async (username, cube, repo, gitToken) => {
         if (!authRes.result) {
             throw new Error("Unauthorized Access")
         } else {
-
             let r = await getUserTokenAndDecrypt(repo, algorithm, gitToken);
             const studentToken = r.split('\n')[0].split('=')[1]
             const masterToken = r.split('\n')[1].split('=')[1]
 
             // ========================================== func 1 - get lesson
             let res = await fetchStartLesson(cube, qHub, masterToken, qHubCube);
-            console.log(res)
             if (res.result) {
                 let initLessonBranch = res.lessons.split("\n").filter(Boolean)[0];
 
                 // ========================================== func 2
-                await pullFirstLesson(res, username, cube, masterToken, cHub, qHub, qHubCube);
                 // await pullFirstLesson(res.lessons, username, cube, masterToken, cHub, qHub, qHubCube);
+                await pullFirstLesson(
+                    res, // cube index
+                    username,
+                    cube,
+                    masterToken,
+                    cHub, 
+                    qHub, 
+                    qHubCube
+                );
 
                 // ========================================== func 3 - delete auth file
                 await deleteFile(
@@ -416,7 +422,17 @@ let initCube = async (username, cube, repo, gitToken) => {
                 let resp = await enableStudentPage(username, cube, studentToken);
 
                 // ========================================== func 7 - add actions file for chub and student repo
-                await addActions(qHubActionRepo, initLessonBranch, username, cube, masterToken, studentToken, cHub, qHub);
+                await addActions(
+                    res.cubeInfo.type, // cube type
+                    qHubActionRepo, 
+                    initLessonBranch, 
+                    username, 
+                    cube, 
+                    masterToken, 
+                    studentToken, 
+                    cHub, 
+                    qHub
+                );
                 // await addActions(initLessonBranch, username, cube, masterToken, studentToken, cHub, qHub, qHubCube);
                 
                 return resp;
