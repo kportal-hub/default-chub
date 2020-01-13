@@ -407,15 +407,15 @@ let initCube = async (username, cube, repo, gitToken) => {
                     masterToken
                 );
 
-                // ========================================== func 4 - delete cube.user.json
-                await deleteFile(
-                    cHub, // owner
-                    cHubCube, // repo
-                    `${cube}.user.json`, // path
-                    `Delete ${cube}.user.json`,
-                    "master", // branch
-                    masterToken
-                );
+                // // ========================================== func 4 - delete cube.user.json
+                // await deleteFile(
+                //     cHub, // owner
+                //     cHubCube, // repo
+                //     `${cube}.user.json`, // path
+                //     `Delete ${cube}.user.json`,
+                //     "master", // branch
+                //     masterToken
+                // );
                 
                 // ========================================== func 5 - fork cube repo
                 await forkChubCube(username, cube, cHub, teacher, studentToken);
