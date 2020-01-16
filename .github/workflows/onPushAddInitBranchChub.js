@@ -359,7 +359,7 @@ let initCube = async (username, cube, repo, gitToken) => {
         const cHubCube = `${username}-${cube}-cube`; 
         
         // TODO
-        const teacher = `nascoder`; 
+        const teacher = `ntohidi`; 
 
         // create encrypted auth file and send it to server to get tokens
         await encryptAndPutAuthFile(cHub, repo, algorithm, gitToken, authPhrase, _silent);
