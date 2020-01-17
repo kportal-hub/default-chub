@@ -354,8 +354,7 @@ let initCube = async (username, cube, repo, gitToken) => {
     const _silent = false;
     
     try {
-        const qHubCube = `${cube}-qhub-test`; //`${cube}-qhub`
-        // const qHubCube = `ntohidi-js-build`; //`${cube}-qhub`
+        const qHubCube = `${cube}-qhub`; // `${cube}-qhub-test`
         const cHubCube = `${username}-${cube}-cube`; 
         
         // TODO
