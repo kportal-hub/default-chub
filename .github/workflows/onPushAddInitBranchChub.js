@@ -406,15 +406,15 @@ let initCube = async (username, cube, repo, gitToken) => {
                     masterToken
                 );
 
-                // // ========================================== func 4 - delete cube.user.json
-                // await deleteFile(
-                //     cHub, // owner
-                //     cHubCube, // repo
-                //     `${cube}.user.json`, // path
-                //     `Delete ${cube}.user.json`,
-                //     "master", // branch
-                //     masterToken
-                // );
+                // ========================================== func 4 - delete cube.user.json
+                await deleteFile(
+                    cHub, // owner
+                    cHubCube, // repo
+                    `${cube}.user.json`, // path
+                    `delete ${cube}.user.json`,
+                    "master", // branch
+                    masterToken
+                );
                 
                 // ========================================== func 5 - fork cube repo
                 await forkChubCube(username, cube, cHub, teacher, studentToken);
@@ -434,7 +434,6 @@ let initCube = async (username, cube, repo, gitToken) => {
                     cHub, 
                     qHub
                 );
-                // await addActions(initLessonBranch, username, cube, masterToken, studentToken, cHub, qHub, qHubCube);
                 
                 return resp;
             }
@@ -449,11 +448,14 @@ let initCube = async (username, cube, repo, gitToken) => {
 }
 
 const cubeOnPush = async (repo, gitToken) => {
-    const cube = JSON.parse(fs.readFileSync(process.env.NODE_CUBE, 'utf8')).commits[0].message.split(".")[0];
-    if (!(["modified", "complete"].includes(cube))) {
+    // const cube = JSON.parse(fs.readFileSync(process.env.NODE_CUBE, 'utf8')).commits[0].message.split(".")[0];
+    const commit = JSON.parse(fs.readFileSync(process.env.NODE_CUBE, 'utf8')).commits[0].message;
+    const cube = commit.split(".")[0];
+    if (!(commit.toLocaleLowerCase().startsWith('delete')) && !(["modified", "complete"].includes(cube))) {
         const userInfo = JSON.parse(fs.readFileSync(`${cube}.user.json`, 'utf8'))
         return await initCube(userInfo.username, cube, repo, gitToken)
     }
+    return "no actions to run";
 }
 
 cubeOnPush(process.argv[2], process.argv[3]).then((res) => {
